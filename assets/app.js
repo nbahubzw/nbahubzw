@@ -1,0 +1,22 @@
+const WHATSAPP='263716567899';
+const teams=[
+ {id:'warriors',name:'Golden State Warriors',image:'assets/images/warriors.jpg',visual:'photo'},
+ {id:'bulls',name:'Chicago Bulls',image:'assets/images/bulls.jpg',visual:'photo'},
+ {id:'celtics',name:'Boston Celtics',image:'assets/images/celtics.jpg',visual:'photo'},
+ {id:'sixers',name:'Philadelphia 76ers',image:'assets/images/sixers.jpg',visual:'photo'},
+ {id:'rockets',name:'Houston Rockets',image:'assets/images/rockets.jpg',visual:'photo'},
+ {id:'lakers',name:'Los Angeles Lakers',image:'assets/images/lakers.jpg',visual:'photo'},
+ {id:'nuggets',name:'Denver Nuggets',image:'assets/images/nuggets.jpg',visual:'photo'},
+ {id:'heat',name:'Miami Heat',image:'assets/images/heat.jpg',visual:'photo'}
+];
+let cart=JSON.parse(localStorage.getItem('nbahubCart')||'[]');
+function visual(t){return t.visual==='photo'?`<img class="jersey-photo" src="${t.image}" alt="${t.name} jersey reference">`:`<div class="jersey-art" style="--c1:${t.c1};--c2:${t.c2}"><span>${t.mark}</span><strong>00</strong><small>PRODUCT IMAGE TO BE ADDED</small></div>`}
+function card(t){return `<article class="product"><div class="product-visual">${visual(t)}</div><div class="product-body"><h3>${t.name}</h3><div class="price">US$15</div><p class="availability">Medium and Large available<br>Other sizes out of stock<br>Jersey top only</p><div class="buy-row"><select aria-label="Select ${t.name} size" data-size><option>Medium</option><option>Large</option></select><button data-add="${t.id}">Add to Cart</button></div></div></article>`}
+function renderProducts(){let c=document.querySelector('#catalogue');if(c)c.innerHTML=teams.map(card).join('');let f=document.querySelector('#featured');if(f)f.innerHTML=teams.slice(0,4).map(card).join('')}
+function save(){localStorage.setItem('nbahubCart',JSON.stringify(cart));renderCart()}
+function addToCart(id,size){let t=teams.find(x=>x.id===id);let found=cart.find(x=>x.id===id&&x.size===size);if(found)found.qty++;else cart.push({id,name:t.name,size,qty:1,price:15});save();document.querySelector('[data-cart]')?.classList.add('open')}
+function remove(i){cart.splice(i,1);save()}
+function renderCart(){document.querySelectorAll('[data-cart-count]').forEach(x=>x.textContent=cart.reduce((a,b)=>a+b.qty,0));let total=cart.reduce((a,b)=>a+b.price*b.qty,0);document.querySelectorAll('[data-cart-total]').forEach(x=>x.textContent=`US$${total}`);document.querySelectorAll('[data-cart-items]').forEach(el=>el.innerHTML=cart.length?cart.map((x,i)=>`<div class="cart-item"><div><strong>${x.name}</strong><p>Size: ${x.size} | Qty: ${x.qty} | US$${x.price*x.qty}</p></div><button data-remove="${i}">Remove</button></div>`).join(''):'<div class="empty">Your cart is empty.</div>')}
+function checkout(){if(!cart.length){alert('Your cart is empty.');return}let total=cart.reduce((a,b)=>a+b.price*b.qty,0);let lines=cart.map((x,i)=>`${i+1}. ${x.name} | Size: ${x.size} | Qty: ${x.qty} | US$${x.price*x.qty}`).join('\n');let msg=`Hello NBAhub ZW. I would like to confirm stock availability for the following order:\n\n${lines}\n\nEstimated total: US$${total}\n\nPlease confirm availability and payment instructions before I make any payment.`;window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`,'_blank')}
+document.addEventListener('click',e=>{let add=e.target.closest('[data-add]');if(add){let size=add.parentElement.querySelector('[data-size]').value;addToCart(add.dataset.add,size)}let rem=e.target.closest('[data-remove]');if(rem)remove(+rem.dataset.remove);if(e.target.closest('[data-open-cart]'))document.querySelector('[data-cart]')?.classList.add('open');if(e.target.closest('[data-close-cart]'))document.querySelector('[data-cart]')?.classList.remove('open');if(e.target.closest('[data-checkout]'))checkout();if(e.target.closest('.nav-toggle'))document.querySelector('nav')?.classList.toggle('open')});
+document.addEventListener('DOMContentLoaded',()=>{renderProducts();renderCart();document.querySelectorAll('[data-whatsapp-link]').forEach(a=>a.href=`https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hello NBAhub ZW. I would like to confirm jersey stock availability before placing an order.')}`);let cw=document.querySelector('#customWhatsApp');if(cw)cw.href=`https://wa.me/${WHATSAPP}?text=${encodeURIComponent('Hello NBAhub ZW. I would like to enquire about a custom basketball jersey from US$20 per unit. Please assist me with availability and order requirements.')}`});
